@@ -1,0 +1,98 @@
+diff --git a/fx9860g.ld.c b/fx9860g.ld.c
+index f86ffa2..c21d632 100644
+--- a/fx9860g.ld.c
++++ b/fx9860g.ld.c
+@@ -25,7 +25,7 @@ MEMORY
+ 	   0x1100 bytes near the end of the user RAM, which is larger; the 6k
+ 	   left for the user are honored in both cases. Unused memory from the
+ 	   exposed 6k and non-exposed memory is available through malloc(). */
+-	ram   (rw):   o = 0x08100200, l = 6k
++	ram   (rw):   o = 0x08100200, l = 30k
+ 
+ 	/* This region represents the first block of user RAM. Linker arranges
+ 	   sections as if linked to address 0, then gint's runtime determines
+diff --git a/include/gint/intc.h b/include/gint/intc.h
+index 9b117f0..d60be23 100644
+--- a/include/gint/intc.h
++++ b/include/gint/intc.h
+@@ -41,6 +41,7 @@ enum {
+ 	INTC_DMA_DEI4,
+ 	INTC_DMA_DEI5,
+ 	INTC_DMA_DADERR,
++   INTC_SCIF0,
+ 	/* Real-Time Clock [RTC]; a single IPR covers all 3 interrupts */
+ 	INTC_RTC_ATI,
+ 	INTC_RTC_PRI,
+diff --git a/src/intc/intc.c b/src/intc/intc.c
+index 10c471a..d852a97 100644
+--- a/src/intc/intc.c
++++ b/src/intc/intc.c
+@@ -60,6 +60,8 @@ static struct info {
+ 	{ IPRF, 0x0f00, IMR5,  0x10, _ },
+ 	{ IPRF, 0x0f00, IMR5,  0x20, _ },
+ 	{ IPRF, 0x0f00, IMR5,  0x40, _ },
++	/* SCIF */
++	{ IPRG, 0xf000, IMR5,  0x01, _ },
+ 	/* RTC */
+ 	{ IPRK, 0xf000, IMR10, 0x04, IPRA, 0x000f },
+ 	{ IPRK, 0xf000, IMR10, 0x02, IPRA, 0x000f },
+diff --git a/src/kernel/syscalls.S b/src/kernel/syscalls.S
+index f089cb7..40b0e85 100644
+--- a/src/kernel/syscalls.S
++++ b/src/kernel/syscalls.S
+@@ -44,6 +44,20 @@
+ .global ___ConfigureStatusArea
+ .global ___SetQuitHandler
+ 
++.global ___Serial_Open
++.global ___Serial_Close
++.global ___Serial_ReadByte
++.global ___Serial_ReadBytes
++.global ___Serial_WriteByte
++.global ___Serial_WriteBytes
++.global ___Serial_WriteByteDirect
++.global ___Serial_GetRxBufferSize
++.global ___Serial_GetTxBufferFreeCapacity
++.global ___Serial_ClearReceiveBuffer
++.global ___Serial_ClearTransmitBuffer
++.global ___Serial_IsOpen
++.global ___OS_InnerWait_ms
++
+ /* Reset */
+ .global ___Reset
+ 
+@@ -118,6 +132,34 @@ ___GetVRAMAddress:
+ ___SetQuitHandler:
+ 	syscall(0x494)
+ 
++___Serial_Open:
++	syscall(0x418)
++___Serial_Close:
++	syscall(0x419)
++___Serial_ReadByte:
++	syscall(0x040C)
++___Serial_ReadBytes:
++	syscall(0x040D)
++___Serial_WriteByte:
++	syscall(0x040E)
++___Serial_WriteBytes:
++	syscall(0x040F)
++___Serial_WriteByteDirect:
++	syscall(0x0410)
++___Serial_GetRxBufferSize:
++	syscall(0x0411)
++___Serial_GetTxBufferFreeCapacity:
++	syscall(0x0412)
++___Serial_ClearReceiveBuffer:
++	syscall(0x0413)
++___Serial_ClearTransmitBuffer:
++	syscall(0x0414)
++___Serial_IsOpen:
++	syscall(0x0425)
++
++___OS_InnerWait_ms:
++	syscall(0x0420)
++
+ /* Reset */
+ 
+ ___Reset:

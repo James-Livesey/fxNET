@@ -1,3 +1,6 @@
+# Based on: https://github.com/Manawyrm/fxIP/blob/main/gint.patch
+# Licence: MIT
+
 diff --git a/fx9860g.ld.c b/fx9860g.ld.c
 index f86ffa2..c21d632 100644
 --- a/fx9860g.ld.c

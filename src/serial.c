@@ -1,3 +1,8 @@
+/*
+    Based on: https://github.com/Manawyrm/fxIP/blob/2291a37637bc602d569c3e806042e4cd9813098d/src/scif.c
+    Licence: MIT
+*/
+
 #include <gint/intc.h>
 
 #include "serial.h"

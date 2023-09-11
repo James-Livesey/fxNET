@@ -12,6 +12,8 @@ find_package(Gint 2.10 REQUIRED)
 set(SOURCES
     src/serial.h
     src/serial.c
+    src/keys.h
+    src/keys.c
     src/main.c
     # ...
 )

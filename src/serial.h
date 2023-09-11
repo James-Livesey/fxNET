@@ -1,7 +1,7 @@
 #ifndef SERIAL_H_
 #define SERIAL_H_
 
-#include "stdint.h"
+#include <stdint.h>
 
 bool serial_open();
 bool serial_isOpen();

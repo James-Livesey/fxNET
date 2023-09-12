@@ -14,6 +14,8 @@ set(SOURCES
     src/serial.c
     src/keys.h
     src/keys.c
+    src/ui.c
+    src/ui.h
     src/main.c
     # ...
 )

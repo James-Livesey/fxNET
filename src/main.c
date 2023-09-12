@@ -4,6 +4,7 @@
 #include <gint/keyboard.h>
 
 #include "keys.h"
+#include "ui.h"
 #include "serial.h"
 
 #define COLS 21

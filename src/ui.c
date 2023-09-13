@@ -34,21 +34,26 @@ UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds) {
 
 void ui_destroyElement(UiElement* element) {
     if (element->screen->firstElement == element) {
-        element->screen->firstElement = NULL;
+        element->screen->firstElement = element->next;
     } else {
         UiElement* currentElement = element->screen->firstElement;
         UiElement* previousElement = currentElement;
+        bool shouldRelink = true;
 
         while (currentElement != element) {
             if (currentElement == NULL) {
-                // TODO: Handle edge case by preventing relinking
+                shouldRelink = false;
+
+                break;
             }
 
             previousElement = currentElement;
             currentElement = currentElement->next;
         }
 
-        previousElement->next = currentElement->next;
+        if (shouldRelink) {
+            previousElement->next = element->next;
+        }
     }
 
     free(element);
@@ -64,10 +69,16 @@ UiScreen* ui_newScreen() {
 }
 
 void ui_destroyScreen(UiScreen* screen) {
-    // TODO: Destroy all elements
-
     if (screen->firstElement) {
-        ui_destroyElement(screen->firstElement);
+        UiElement* currentElement = screen->firstElement;
+
+        while (currentElement) {
+            UiElement* nextElement = currentElement->next;
+
+            free(currentElement);
+
+            currentElement = nextElement;
+        }
     }
 
     free(screen);

@@ -22,6 +22,7 @@ typedef struct UiElement {
     UiElementType type;
     struct UiScreen* screen;
     UiBoundingBox bounds;
+    void* data;
     struct UiElement* next;
 } UiElement;
 

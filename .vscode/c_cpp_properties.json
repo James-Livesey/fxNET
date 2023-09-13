@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "~/.local/bin/sh-elf-gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": [
+                "~/.local/share/giteapc/Lephenixnoir/sh-elf-gcc/lib/gcc/sh3eb-elf/11.1.0/include/"
+            ]
+        }
+    ],
+    "version": 4
+}

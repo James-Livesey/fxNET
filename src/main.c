@@ -112,6 +112,15 @@ void console_write(char* bytes) {
 }
 
 int main(void) {
+    UiScreen* screen = ui_newScreen();
+    UiElement* button1 = ui_newButton(screen, (UiBoundingBox) {0, 0, 96, 12}, "Hello, world!");
+    UiElement* button2 = ui_newButton(screen, (UiBoundingBox) {32, 16, 96, 12}, "Testing!");
+
+    button1->focusRight = button2;
+    button2->focusLeft = button1;
+
+    while (ui_renderScreen(screen)) {}
+
     console_clear();
     serial_init();
 

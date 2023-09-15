@@ -5,6 +5,7 @@
 
 typedef enum {
     UI_ELEMENT_TYPE_NONE,
+    UI_ELEMENT_TYPE_LABEL,
     UI_ELEMENT_TYPE_BUTTON
 } UiElementType;
 
@@ -32,10 +33,15 @@ typedef struct UiElement {
     UiBoundingBox bounds;
     void* data;
     bool (*events[_UI_EVENT_TYPES_COUNT])(struct UiElement* element, void* data);
+    bool isFocusable;
     struct UiElement* focusLeft;
     struct UiElement* focusRight;
     struct UiElement* next;
 } UiElement;
+
+typedef struct {
+    char* text;
+} _UiLabelData;
 
 typedef struct {
     char* text;
@@ -49,6 +55,7 @@ typedef struct UiScreen {
 } UiScreen;
 
 UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds);
+UiElement* ui_newLabel(UiScreen* screen, UiBoundingBox bounds, char* text);
 UiElement* ui_newButton(UiScreen* screen, UiBoundingBox bounds, char* text);
 
 void ui_destroyElement(UiElement* element);

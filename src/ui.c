@@ -3,6 +3,7 @@
 #include <gint/display.h>
 
 #include "ui.h"
+#include "common.h"
 #include "keys.h"
 
 UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds) {
@@ -12,6 +13,7 @@ UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds) {
     element->screen = screen;
     element->bounds = bounds;
     element->data = NULL;
+    element->isFocusable = true;
     element->focusLeft = NULL;
     element->focusRight = NULL;
     element->next = NULL;
@@ -40,6 +42,19 @@ UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds) {
     } else {
         screen->firstElement = element;
     }
+
+    return element;
+}
+
+UiElement* ui_newLabel(UiScreen* screen, UiBoundingBox bounds, char* text) {
+    UiElement* element = ui_newElement(screen, bounds);
+    _UiLabelData* data = malloc(sizeof(_UiLabelData));
+
+    data->text = text;
+
+    element->type = UI_ELEMENT_TYPE_LABEL;
+    element->data = data;
+    element->isFocusable = false;
 
     return element;
 }
@@ -100,6 +115,12 @@ bool ui_dispatchElementEvent(UiElement* element, UiEventType eventType, void* da
     return (*element->events[eventType])(element, data);
 }
 
+void renderLabel(UiElement* element, unused bool isFocused) {
+    _UiButtonData* data = element->data;
+
+    dtext_opt(element->bounds.x, element->bounds.y, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, data->text, -1);
+}
+
 void renderButton(UiElement* element, bool isFocused) {
     unsigned int x1 = element->bounds.x;
     unsigned int y1 = element->bounds.y;
@@ -121,6 +142,7 @@ void renderButton(UiElement* element, bool isFocused) {
 void ui_renderElement(UiElement* element, bool isFocused) {
     switch (element->type) {
         case UI_ELEMENT_TYPE_NONE: return;
+        case UI_ELEMENT_TYPE_LABEL: return renderLabel(element, isFocused);
         case UI_ELEMENT_TYPE_BUTTON: return renderButton(element, isFocused);
     }
 }
@@ -203,36 +225,34 @@ bool ui_renderScreen(UiScreen* screen) {
                 break;
 
             case KEY_UP:
-                if (screen->elementCount == 0) {
-                    break;
-                }
-
-                screen->modified = true;
-
-                if (screen->focusedElementIndex <= 0) {
-                    screen->focusedElementIndex = screen->elementCount - 1;
-
-                    break;
-                }
-
-                screen->focusedElementIndex--;
-
-                break;
-
             case KEY_DOWN:
                 if (screen->elementCount == 0) {
                     break;
                 }
 
+                unsigned int initialIndex = screen->focusedElementIndex;
+
                 screen->modified = true;
 
-                if (screen->focusedElementIndex >= screen->elementCount - 1) {
-                    screen->focusedElementIndex = 0;
+                do {
+                    if (keys_getEvent().key == KEY_UP) {
+                        if (screen->focusedElementIndex <= 0) {
+                            screen->focusedElementIndex = screen->elementCount - 1;
 
-                    break;
-                }
+                            break;
+                        }
 
-                screen->focusedElementIndex++;
+                        screen->focusedElementIndex--;
+                    } else {
+                        if (screen->focusedElementIndex >= screen->elementCount - 1) {
+                            screen->focusedElementIndex = 0;
+
+                            break;
+                        }
+
+                        screen->focusedElementIndex++;
+                    }
+                } while (!ui_getFocusedElement(screen)->isFocusable && screen->focusedElementIndex != initialIndex);
 
                 break;
 

@@ -1,0 +1,8 @@
+mini.png:
+    type: font
+    name: font_mini
+    charset: ascii
+    proportional: true
+    height: 5
+    grid.size: 5x6
+    grid.padding: 1

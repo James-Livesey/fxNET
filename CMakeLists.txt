@@ -10,6 +10,7 @@ include(Fxconv)
 find_package(Gint 2.10 REQUIRED)
 
 set(SOURCES
+    src/common.h
     src/serial.h
     src/serial.c
     src/keys.h
@@ -24,6 +25,8 @@ set(ASSETS
     # ...
 )
 set(ASSETS_fx
+    assets-fx/fonts/mini.png
+    assets-fx/splash-reduced.png
     # ...
 )
 set(ASSETS_cg

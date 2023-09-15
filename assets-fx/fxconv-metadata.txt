@@ -1,0 +1,3 @@
+splash-reduced.png:
+    type: bopti-image
+    name: img_splash

@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <gint/display.h>
 #include <gint/keyboard.h>
+#include <gint/gray.h>
 
 #include "common.h"
 #include "keys.h"
@@ -10,6 +11,9 @@
 
 #define COLS 21
 #define ROWS 8
+
+extern font_t font_mini;
+extern bopti_image_t img_splash;
 
 char console[ROWS][COLS];
 
@@ -113,6 +117,28 @@ void console_write(char* bytes) {
 }
 
 int main(void) {
+    dgray(DGRAY_ON);
+    dgray_setdelays(869, 1311);
+
+    dimage(0, 0, &img_splash);
+
+    dfont(&font_mini);
+    dtext(4, 48, C_WHITE, "Version 0.1.0");
+    dtext(4, 56, C_WHITE, "James Livesey");
+    dfont(dfont_default());
+
+    dupdate();
+
+    while (true) {
+        if (keys_poll()) {
+            if (keys_getEvent().key == KEY_EXIT) {
+                break;
+            }
+        }
+    }
+
+    dgray(DGRAY_OFF);
+
     UiScreen* screen = ui_newScreen();
     UiElement* button1 = ui_newButton(screen, (UiBoundingBox) {0, 0, 96, 12}, "Hello, world!");
     unused UiElement* label = ui_newLabel(screen, (UiBoundingBox) {0, 16, 96, 12}, "This is fxNET");

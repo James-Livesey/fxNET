@@ -98,7 +98,10 @@ void ui_destroyElement(UiElement* element) {
         }
     }
 
-    free(element->data);
+    if (element->data) {
+        free(element->data);
+    }
+
     free(element);
 }
 
@@ -164,7 +167,10 @@ void ui_destroyScreen(UiScreen* screen) {
         while (currentElement) {
             UiElement* nextElement = currentElement->next;
 
-            free(currentElement->data);
+            if (currentElement->data) {
+                free(currentElement->data);
+            }
+
             free(currentElement);
 
             currentElement = nextElement;

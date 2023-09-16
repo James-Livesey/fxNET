@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <gint/gint.h>
 #include <gint/display.h>
 
@@ -71,6 +72,24 @@ UiElement* ui_newButton(UiScreen* screen, UiBoundingBox bounds, char* text) {
     return element;
 }
 
+UiElement* ui_newInput(UiScreen* screen, UiBoundingBox bounds, size_t maxLength) {
+    UiElement* element = ui_newElement(screen, bounds);
+    _UiInputData* data = malloc(sizeof(_UiInputData));
+
+    data->maxLength = maxLength;
+    data->value = malloc(maxLength + 1);
+    data->caretPosition = 0;
+
+    for (size_t i = 0; i <= maxLength; i++) {
+        data->value[i] = '\0';
+    }
+
+    element->type = UI_ELEMENT_TYPE_INPUT;
+    element->data = data;
+
+    return element;
+}
+
 void ui_destroyElement(UiElement* element) {
     element->screen->modified = true;
     element->screen->elementCount--;
@@ -99,6 +118,12 @@ void ui_destroyElement(UiElement* element) {
     }
 
     if (element->data) {
+        if (element->type == UI_ELEMENT_TYPE_INPUT) {
+            _UiInputData* data = element->data;
+
+            free(data->value);
+        }
+
         free(element->data);
     }
 
@@ -141,11 +166,37 @@ void renderButton(UiElement* element, bool isFocused) {
     dtext_opt((x1 + x2) / 2, (y1 + y2) / 2, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_CENTER, data->text, -1);
 }
 
+void renderInput(UiElement* element, bool isFocused) {
+    unsigned int x1 = element->bounds.x;
+    unsigned int y1 = element->bounds.y;
+    unsigned int x2 = x1 + element->bounds.width - 1;
+    unsigned int y2 = y1 + element->bounds.height - 1;
+
+    drect_border(x1, y1, x2, y2, C_WHITE, 1, C_BLACK);
+
+    _UiInputData* data = element->data;
+
+    dtext_opt(x1 + 2, (y1 + y2) / 2, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, data->value, (element->bounds.width - 4) / 6);
+
+    if (!isFocused) {
+        return;
+    }
+
+    unsigned int caretStart = x1 + 2 + (data->caretPosition * 6);
+
+    if (caretStart > x2) {
+        return;
+    }
+
+    drect(caretStart, ((y1 + y2) / 2) - 3, caretStart + 1, ((y1 + y2) / 2) + 4, C_INVERT);
+}
+
 void ui_renderElement(UiElement* element, bool isFocused) {
     switch (element->type) {
         case UI_ELEMENT_TYPE_NONE: return;
         case UI_ELEMENT_TYPE_LABEL: return renderLabel(element, isFocused);
         case UI_ELEMENT_TYPE_BUTTON: return renderButton(element, isFocused);
+        case UI_ELEMENT_TYPE_INPUT: return renderInput(element, isFocused);
     }
 }
 
@@ -263,6 +314,21 @@ bool ui_renderScreen(UiScreen* screen) {
                 break;
 
             case KEY_LEFT:
+                if (
+                    focusedElement &&
+                    focusedElement->type == UI_ELEMENT_TYPE_INPUT
+                ) {
+                    _UiInputData* data = focusedElement->data;
+
+                    if (data->caretPosition > 0) {
+                        data->caretPosition--;
+
+                        screen->modified = true;
+
+                        break;
+                    }
+                }
+
                 if (focusedElement && focusedElement->focusLeft) {
                     screen->focusedElementIndex = ui_getIndexOfElement(screen, focusedElement->focusLeft);
                     screen->modified = true;
@@ -271,6 +337,21 @@ bool ui_renderScreen(UiScreen* screen) {
                 break;
 
             case KEY_RIGHT:
+                if (
+                    focusedElement &&
+                    focusedElement->type == UI_ELEMENT_TYPE_INPUT
+                ) {
+                    _UiInputData* data = focusedElement->data;
+
+                    if (data->caretPosition < strlen(data->value)) {
+                        data->caretPosition++;
+
+                        screen->modified = true;
+
+                        break;
+                    }
+                }
+
                 if (focusedElement && focusedElement->focusRight) {
                     screen->focusedElementIndex = ui_getIndexOfElement(screen, focusedElement->focusRight);
                     screen->modified = true;
@@ -281,6 +362,66 @@ bool ui_renderScreen(UiScreen* screen) {
             case KEY_EXE:
                 if (ui_dispatchFocusedElementEvent(screen, UI_EVENT_CLICK, NULL)) {
                     goto render;
+                }
+
+                break;
+
+            case KEY_DEL:
+                if (
+                    focusedElement &&
+                    focusedElement->type == UI_ELEMENT_TYPE_INPUT
+                ) {
+                    _UiInputData* data = focusedElement->data;
+
+                    if (data->caretPosition == 0) { // Deletion from start
+                        data->caretPosition++;
+                    }
+
+                    for (size_t i = data->caretPosition - 1; i < data->maxLength; i++) {
+                        data->value[i] = data->value[i + 1];
+                    }
+
+                    data->caretPosition--;
+
+                    screen->modified = true;
+
+                    break;
+                }
+
+                break;
+
+            default:
+                if (
+                    focusedElement &&
+                    focusedElement->type == UI_ELEMENT_TYPE_INPUT
+                ) {
+                    _UiInputData* data = focusedElement->data;
+                    char* string = keys_getString(false);
+
+                    if (data->caretPosition == data->maxLength) {
+                        break;
+                    }
+
+                    if (strlen(string) == 0) {
+                        break;
+                    }
+
+                    for (size_t i = 0; i < strlen(string); i++) {
+                        for (size_t j = data->maxLength - 2; j > data->caretPosition; j--) {
+                            data->value[j + 1] = data->value[j];
+                        }
+
+                        data->value[data->caretPosition + 1] = data->value[data->caretPosition];
+                        data->value[data->maxLength] = '\0'; // Ensure null terminator at end of text
+
+                        data->value[data->caretPosition] = string[i];
+
+                        data->caretPosition++;
+                    }
+
+                    screen->modified = true;
+
+                    break;
                 }
 
                 break;

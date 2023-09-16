@@ -143,6 +143,7 @@ int main(void) {
     UiElement* button1 = ui_newButton(screen, (UiBoundingBox) {0, 0, 96, 12}, "Hello, world!");
     unused UiElement* label = ui_newLabel(screen, (UiBoundingBox) {0, 16, 96, 12}, "This is fxNET");
     UiElement* button2 = ui_newButton(screen, (UiBoundingBox) {32, 32, 96, 12}, "Testing!");
+    unused UiElement* input = ui_newInput(screen, (UiBoundingBox) {16, 48, 96, 12}, 16);
 
     button1->focusRight = button2;
     button2->focusLeft = button1;

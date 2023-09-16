@@ -6,7 +6,8 @@
 typedef enum {
     UI_ELEMENT_TYPE_NONE,
     UI_ELEMENT_TYPE_LABEL,
-    UI_ELEMENT_TYPE_BUTTON
+    UI_ELEMENT_TYPE_BUTTON,
+    UI_ELEMENT_TYPE_INPUT
 } UiElementType;
 
 typedef enum {
@@ -47,6 +48,12 @@ typedef struct {
     char* text;
 } _UiButtonData;
 
+typedef struct {
+    size_t maxLength;
+    char* value;
+    unsigned int caretPosition;
+} _UiInputData;
+
 typedef struct UiScreen {
     UiElement* firstElement;
     bool modified;
@@ -57,6 +64,7 @@ typedef struct UiScreen {
 UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds);
 UiElement* ui_newLabel(UiScreen* screen, UiBoundingBox bounds, char* text);
 UiElement* ui_newButton(UiScreen* screen, UiBoundingBox bounds, char* text);
+UiElement* ui_newInput(UiScreen* screen, UiBoundingBox bounds, size_t maxLength);
 
 void ui_destroyElement(UiElement* element);
 bool ui_dispatchElementEvent(UiElement* element, UiEventType eventType, void* data);

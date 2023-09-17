@@ -14,6 +14,7 @@
 
 extern font_t font_mini;
 extern bopti_image_t img_splash;
+extern bopti_image_t img_fn_casing;
 
 char console[ROWS][COLS];
 
@@ -147,6 +148,8 @@ int main(void) {
 
     button1->focusRight = button2;
     button2->focusLeft = button1;
+
+    ui_setFunctionAction(screen, UI_SLOT_F5, (UiFunctionAction) {.indicator = &img_fn_casing, .action = keys_toggleCasingState});
 
     while (ui_renderScreen(screen)) {}
 

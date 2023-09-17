@@ -207,6 +207,7 @@ UiScreen* ui_newScreen() {
     screen->modified = true;
     screen->focusedElementIndex = 0;
     screen->elementCount = 0;
+    screen->actions = NULL;
 
     return screen;
 }
@@ -226,6 +227,20 @@ void ui_destroyScreen(UiScreen* screen) {
 
             currentElement = nextElement;
         }
+    }
+
+    if (screen->actions) {
+        for (unsigned int i = 0; i < 6; i++) {
+            UiFunctionAction* action = screen->actions->actions[i];
+
+            if (!screen) {
+                continue;
+            }
+
+            free(action);
+        }
+
+        free(screen->actions);
     }
 
     free(screen);
@@ -264,6 +279,57 @@ UiElement* ui_getFocusedElement(UiScreen* screen) {
 
 bool ui_dispatchFocusedElementEvent(UiScreen* screen, UiEventType eventType, void* data) {
     return ui_dispatchElementEvent(ui_getFocusedElement(screen), eventType, data);
+}
+
+void ui_runFunctionAction(UiScreen* screen, UiFunctionSlot slot) {
+    if (!screen->actions) {
+        return;
+    }
+
+    UiFunctionAction** actions = screen->actions->actions;
+
+    if (!actions[slot]) {
+        return;
+    }
+
+    (*actions[slot]->action)(screen);
+}
+
+void ui_setFunctionAction(UiScreen* screen, UiFunctionSlot slot, UiFunctionAction action) {
+    if (!screen->actions) {
+        screen->actions = malloc(sizeof(UiFunctionActions));
+
+        for (unsigned int i = 0; i < 6; i++) {
+            screen->actions->actions[i] = NULL;
+        }
+    }
+
+    UiFunctionAction* actionPtr = malloc(sizeof(action));
+
+    actionPtr->indicator = action.indicator;
+    actionPtr->action = action.action;
+
+    screen->actions->actions[slot] = actionPtr;
+
+    screen->modified = true;
+}
+
+void renderFunctionActions(UiScreen* screen) {
+    if (!screen->actions) {
+        return;
+    }
+
+    drect(0, 127, 56, 63, C_WHITE);
+
+    for (unsigned int i = 0; i < 6; i++) {
+        UiFunctionAction* action = screen->actions->actions[i];
+
+        if (!screen) {
+            continue;
+        }
+
+        dimage(2 + ((i - 1) * 21), 56, action->indicator);
+    }
 }
 
 bool ui_renderScreen(UiScreen* screen) {
@@ -390,6 +456,15 @@ bool ui_renderScreen(UiScreen* screen) {
 
                 break;
 
+            case KEY_F1:
+            case KEY_F2:
+            case KEY_F3:
+            case KEY_F4:
+            case KEY_F5:
+            case KEY_F6:
+                ui_runFunctionAction(screen, keys_getEvent().key - KEY_F1);
+                break;
+
             default:
                 if (
                     focusedElement &&
@@ -442,6 +517,8 @@ bool ui_renderScreen(UiScreen* screen) {
 
             currentElement = currentElement->next;
         }
+
+        renderFunctionActions(screen);
 
         dupdate();
 

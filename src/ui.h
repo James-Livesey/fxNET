@@ -2,6 +2,7 @@
 #define UI_H_
 
 #include <stdbool.h>
+#include <gint/display.h>
 
 typedef enum {
     UI_ELEMENT_TYPE_NONE,
@@ -13,6 +14,15 @@ typedef enum {
 typedef enum {
     UI_EVENT_CLICK = 0
 } UiEventType;
+
+typedef enum {
+    UI_SLOT_F1 = 0,
+    UI_SLOT_F2 = 1,
+    UI_SLOT_F3 = 2,
+    UI_SLOT_F4 = 3,
+    UI_SLOT_F5 = 4,
+    UI_SLOT_F6 = 5
+} UiFunctionSlot;
 
 #define _UI_EVENT_TYPES_COUNT 1
 
@@ -54,11 +64,21 @@ typedef struct {
     unsigned int caretPosition;
 } _UiInputData;
 
+typedef struct {
+    bopti_image_t* indicator;
+    void (*action)(struct UiScreen* screen);
+} UiFunctionAction;
+
+typedef struct {
+    UiFunctionAction* actions[6];
+} UiFunctionActions;
+
 typedef struct UiScreen {
     UiElement* firstElement;
     bool modified;
     unsigned int focusedElementIndex;
     unsigned int elementCount;
+    UiFunctionActions* actions;
 } UiScreen;
 
 UiElement* ui_newElement(UiScreen* screen, UiBoundingBox bounds);
@@ -76,6 +96,8 @@ UiElement* ui_getElementByIndex(UiScreen* screen, unsigned int index);
 unsigned int ui_getIndexOfElement(UiScreen* screen, UiElement* element);
 UiElement* ui_getFocusedElement(UiScreen* screen);
 bool ui_dispatchFocusedElementEvent(UiScreen* screen, UiEventType eventType, void* data);
+void ui_runFunctionAction(UiScreen* screen, UiFunctionSlot slot);
+void ui_setFunctionAction(UiScreen* screen, UiFunctionSlot slot, UiFunctionAction action);
 bool ui_renderScreen(UiScreen* screen);
 
 #endif

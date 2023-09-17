@@ -27,6 +27,7 @@ set(ASSETS
 set(ASSETS_fx
     assets-fx/fonts/mini.png
     assets-fx/splash-reduced.png
+    assets-fx/fncasing.png
     # ...
 )
 set(ASSETS_cg

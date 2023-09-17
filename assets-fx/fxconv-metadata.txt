@@ -1,3 +1,7 @@
 splash-reduced.png:
     type: bopti-image
     name: img_splash
+
+fncasing.png:
+    type: bopti-image
+    name: img_fn_casing

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <gint/gint.h>
 #include <gint/display.h>
 
@@ -319,16 +320,16 @@ void renderFunctionActions(UiScreen* screen) {
         return;
     }
 
-    drect(0, 127, 56, 63, C_WHITE);
+    drect(0, 56, 127, 63, C_WHITE);
 
     for (unsigned int i = 0; i < 6; i++) {
         UiFunctionAction* action = screen->actions->actions[i];
 
-        if (!screen) {
+        if (!action) {
             continue;
         }
 
-        dimage(2 + ((i - 1) * 21), 56, action->indicator);
+        dimage(2 + (i * 21), 56, action->indicator);
     }
 }
 
@@ -471,17 +472,26 @@ bool ui_renderScreen(UiScreen* screen) {
                     focusedElement->type == UI_ELEMENT_TYPE_INPUT
                 ) {
                     _UiInputData* data = focusedElement->data;
-                    char* string = keys_getString(false);
 
                     if (data->caretPosition == data->maxLength) {
                         break;
                     }
 
-                    if (strlen(string) == 0) {
+                    char keyString[16];
+            
+                    strcpy(keyString, keys_getString(false));
+
+                    if (strlen(keyString) == 0) {
                         break;
                     }
 
-                    for (size_t i = 0; i < strlen(string); i++) {
+                    if (keys_casingState == CASING_STATE_LOWER) {
+                        for (size_t i = 0; i < strlen(keyString); i++) {
+                            keyString[i] = tolower(keyString[i]);
+                        }
+                    }
+
+                    for (size_t i = 0; i < strlen(keyString); i++) {
                         for (size_t j = data->maxLength - 2; j > data->caretPosition; j--) {
                             data->value[j + 1] = data->value[j];
                         }
@@ -489,7 +499,7 @@ bool ui_renderScreen(UiScreen* screen) {
                         data->value[data->caretPosition + 1] = data->value[data->caretPosition];
                         data->value[data->maxLength] = '\0'; // Ensure null terminator at end of text
 
-                        data->value[data->caretPosition] = string[i];
+                        data->value[data->caretPosition] = keyString[i];
 
                         data->caretPosition++;
                     }

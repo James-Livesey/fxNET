@@ -1,5 +1,6 @@
 build
 build-fx
 build-cg
+installdev
 *.g1a
 *.g3a

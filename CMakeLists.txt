@@ -37,6 +37,8 @@ set(ASSETS_cg
 
 fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
 
+add_library(duktape STATIC installdev/duktape/src/duktape.c)
+
 add_executable(fxnet ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
 target_compile_options(fxnet PRIVATE -Wall -Wextra -Os)
 target_link_libraries(fxnet Gint::Gint)
